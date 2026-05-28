@@ -2,29 +2,22 @@ name: Auto Bumper
 
 on:
   schedule:
-    # Runs every 15 minutes (you can adjust)
-    - cron: '*/15 * * * *'
-  workflow_dispatch:  # allows manual trigger
+    - cron: '*/10 * * * *'   # runs every 10 minutes (more precise)
+  workflow_dispatch:
 
 jobs:
   bump:
     runs-on: ubuntu-latest
     permissions:
-      contents: write   # needed to commit state file changes
+      contents: write
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-
-      - name: Install dependencies
-        run: pip install -r requirements.txt
-
+      - run: pip install -r requirements.txt
       - name: Run bumper
         env:
           TOKEN_1: ${{ secrets.TOKEN_1 }}
@@ -34,11 +27,9 @@ jobs:
           GUILD_ID: ${{ secrets.GUILD_ID }}
           CHANNEL_ID: ${{ secrets.CHANNEL_ID }}
         run: python bumper.py
-
       - name: Commit state changes
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add bump_state.json
-          git diff --quiet && git diff --staged --quiet || git commit -m "Update bump state [skip ci]"
-          git push
+          git diff --quiet && git diff --staged --quiet || git commit -m "Update bump state [skip ci]" && git push
