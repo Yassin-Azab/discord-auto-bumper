@@ -1,8 +1,10 @@
 name: Auto Bumper
 
 on:
+  push:
+    branches: [ main, master ]
   schedule:
-    - cron: '*/10 * * * *'   # runs every 10 minutes (more precise)
+    - cron: '*/15 * * * *'
   workflow_dispatch:
 
 jobs:
@@ -32,4 +34,4 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add bump_state.json
-          git diff --quiet && git diff --staged --quiet || git commit -m "Update bump state [skip ci]" && git push
+          git diff --quiet && git diff --staged --quiet || (git commit -m "Update bump state [skip ci]" && git push)
