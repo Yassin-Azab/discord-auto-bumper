@@ -17,8 +17,9 @@ GUILD_ID = int(os.getenv("GUILD_ID", "0"))
 CHANNEL_ID = int(os.getenv("CHANNEL_ID", "0"))
 
 # Disboard – exact IDs from your captured request
-DISBOARD_APP_ID = 302050872383242240
-DISBOARD_CMD_ID = 947088344167366698   # <-- correct command ID
+DISBOARD_APP_ID = "302050872383242240"
+DISBOARD_CMD_ID = "947088344167366698"
+DISBOARD_CMD_VERSION = "1051151064008769576"  # <-- REQUIRED!
 DISBOARD_CMD_NAME = "bump"
 
 STATE_FILE = "bump_state.json"
@@ -52,27 +53,53 @@ def save_state(state):
         json.dump(state, f, indent=2)
     logger.info("State saved")
 
-async def send_slash_command(session, token, app_id, cmd_id, cmd_name):
-    """Send interaction with minimal required fields (matches captured payload)"""
+def generate_nonce():
+    """Generate a snowflake-like nonce"""
+    return str((int(datetime.utcnow().timestamp() * 1000) - 1420070400000) << 22 | random.randint(0, 4194303))
+
+async def send_slash_command(session, token, app_id, cmd_id, cmd_version, cmd_name):
+    """Send interaction matching the exact captured payload structure"""
     headers = {
         "Authorization": token,
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36"
     }
+    
     payload = {
         "type": 2,
-        "application_id": str(app_id),
+        "application_id": app_id,
         "guild_id": str(GUILD_ID),
         "channel_id": str(CHANNEL_ID),
-        "session_id": str(random.getrandbits(64)),  # any random string works
+        "session_id": "".join(random.choices("0123456789abcdef", k=32)),  # 32-char hex string
         "data": {
-            "type": 1,
-            "id": str(cmd_id),
+            "version": cmd_version,  # <-- THIS WAS MISSING!
+            "id": cmd_id,
             "name": cmd_name,
-            "options": []
-        }
+            "type": 1,
+            "options": [],
+            "application_command": {
+                "id": cmd_id,
+                "type": 1,
+                "application_id": app_id,
+                "version": cmd_version,
+                "name": cmd_name,
+                "description": "Pushes your server to the top of all your server's tags and the front page",
+                "description_default": "Pushes your server to the top of all your server's tags and the front page",
+                "dm_permission": True,
+                "integration_types": [0],
+                "global_popularity_rank": 1,
+                "options": [],
+                "description_localized": "Bump this server.",
+                "name_localized": "bump"
+            },
+            "attachments": []
+        },
+        "nonce": generate_nonce(),
+        "analytics_location": "slash_ui"
     }
+    
     async with session.post(
-        "https://discord.com/api/v10/interactions",
+        "https://discord.com/api/v9/interactions",  # v9 as per your request
         headers=headers,
         json=payload
     ) as resp:
@@ -81,12 +108,19 @@ async def send_slash_command(session, token, app_id, cmd_id, cmd_name):
             return True
         else:
             text = await resp.text()
-            logger.error(f"✗ {cmd_name} failed: {resp.status} - {text[:200]}")
+            logger.error(f"✗ {cmd_name} failed: {resp.status} - {text[:300]}")
             return False
 
 async def bump_disboard(account_idx, token):
     async with aiohttp.ClientSession() as session:
-        return await send_slash_command(session, token, DISBOARD_APP_ID, DISBOARD_CMD_ID, DISBOARD_CMD_NAME)
+        return await send_slash_command(
+            session, 
+            token, 
+            DISBOARD_APP_ID, 
+            DISBOARD_CMD_ID, 
+            DISBOARD_CMD_VERSION,  # <-- Pass version
+            DISBOARD_CMD_NAME
+        )
 
 async def main():
     state = load_state()
