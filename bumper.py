@@ -16,13 +16,13 @@ TOKENS = [
 GUILD_ID = int(os.getenv("GUILD_ID", "0"))
 CHANNEL_ID = int(os.getenv("CHANNEL_ID", "0"))
 
-# Disboard only
+# Disboard exact command ID (known)
+DISBOARD_CMD_ID = 803115006813356922
 DISBOARD_APP_ID = 302050872383242240
-BUMP_CMD_NAME = "bump"
 
 STATE_FILE = "bump_state.json"
-DELAY_MIN = 15   # minutes
-DELAY_MAX = 30   # minutes
+DELAY_MIN = 15
+DELAY_MAX = 30
 
 logging.basicConfig(
     level=logging.INFO,
@@ -51,8 +51,8 @@ def save_state(state):
         json.dump(state, f, indent=2)
     logger.info("State saved")
 
-async def send_slash_command(session, token, app_id, cmd_name):
-    """Send a single slash command via HTTP interaction endpoint"""
+async def send_slash_command(session, token, app_id, cmd_id, cmd_name):
+    """Send slash command with explicit command ID"""
     headers = {
         "Authorization": token,
         "Content-Type": "application/json"
@@ -65,6 +65,7 @@ async def send_slash_command(session, token, app_id, cmd_name):
         "session_id": str(random.getrandbits(64)),
         "data": {
             "type": 1,
+            "id": str(cmd_id),          # <-- required
             "name": cmd_name,
             "options": []
         }
@@ -83,9 +84,8 @@ async def send_slash_command(session, token, app_id, cmd_name):
             return False
 
 async def bump_disboard(account_idx, token):
-    """Bump Disboard only"""
     async with aiohttp.ClientSession() as session:
-        return await send_slash_command(session, token, DISBOARD_APP_ID, BUMP_CMD_NAME)
+        return await send_slash_command(session, token, DISBOARD_APP_ID, DISBOARD_CMD_ID, "bump")
 
 async def main():
     state = load_state()
