@@ -5,7 +5,6 @@ import os
 import random
 import logging
 from datetime import datetime, timedelta
-from typing import Optional
 
 # ========== CONFIG ==========
 TOKENS = [
@@ -17,10 +16,9 @@ TOKENS = [
 GUILD_ID = int(os.getenv("GUILD_ID", "0"))
 CHANNEL_ID = int(os.getenv("CHANNEL_ID", "0"))
 
-BOTS = {
-    "disboard": 302050872383242240,
-    "topgg": 422087909634736160
-}
+# Disboard only
+DISBOARD_APP_ID = 302050872383242240
+BUMP_CMD_NAME = "bump"
 
 STATE_FILE = "bump_state.json"
 DELAY_MIN = 15   # minutes
@@ -42,7 +40,6 @@ def load_state():
     if os.path.exists(STATE_FILE):
         with open(STATE_FILE, "r") as f:
             data = json.load(f)
-            # migrate if missing keys
             for k, v in default.items():
                 if k not in data:
                     data[k] = v
@@ -55,7 +52,7 @@ def save_state(state):
     logger.info("State saved")
 
 async def send_slash_command(session, token, app_id, cmd_name):
-    """Send slash command via HTTP, no gateway connection"""
+    """Send a single slash command via HTTP interaction endpoint"""
     headers = {
         "Authorization": token,
         "Content-Type": "application/json"
@@ -85,23 +82,15 @@ async def send_slash_command(session, token, app_id, cmd_name):
             logger.error(f"✗ {cmd_name} failed: {resp.status} - {text[:200]}")
             return False
 
-async def bump_both(account_idx, token):
-    """Bump Disboard and Top.gg using the given token"""
+async def bump_disboard(account_idx, token):
+    """Bump Disboard only"""
     async with aiohttp.ClientSession() as session:
-        success = True
-        for bot_name, app_id in BOTS.items():
-            cmd = "bump" if bot_name == "disboard" else "vote"
-            ok = await send_slash_command(session, token, app_id, cmd)
-            if not ok:
-                success = False
-            await asyncio.sleep(1)  # tiny gap
-        return success
+        return await send_slash_command(session, token, DISBOARD_APP_ID, BUMP_CMD_NAME)
 
 async def main():
     state = load_state()
     now = datetime.utcnow()
 
-    # Determine if it's time to bump
     next_time = None
     if state["next_bump_time"]:
         next_time = datetime.fromisoformat(state["next_bump_time"])
@@ -113,11 +102,10 @@ async def main():
             logger.error(f"Token {account+1} is missing")
             return
 
-        logger.info(f"Bumping with account {account+1} (bump #{state['bumps_done']+1}/3)")
-        ok = await bump_both(account, token)
+        logger.info(f"Bumping Disboard with account {account+1} (bump #{state['bumps_done']+1}/3)")
+        ok = await bump_disboard(account, token)
 
         if ok:
-            # Update state
             state["last_bump_time"] = now.isoformat()
             state["bumps_done"] += 1
 
@@ -126,7 +114,6 @@ async def main():
                 state["bumps_done"] = 0
                 logger.info(f"Rotated to account {state['current_account']+1}")
 
-            # Schedule next bump: 2h + random(15-30) min
             delay_minutes = 120 + random.randint(DELAY_MIN, DELAY_MAX)
             next_bump = now + timedelta(minutes=delay_minutes)
             state["next_bump_time"] = next_bump.isoformat()
