@@ -16,10 +16,13 @@ jobs:
       - uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+      
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
+      
       - run: pip install -r requirements.txt
+      
       - name: Run bumper
         env:
           TOKEN_1: ${{ secrets.TOKEN_1 }}
@@ -29,6 +32,8 @@ jobs:
           GUILD_ID: ${{ secrets.GUILD_ID }}
           CHANNEL_ID: ${{ secrets.CHANNEL_ID }}
         run: python bumper.py
+        continue-on-error: true  # Don't fail the whole workflow
+      
       - name: Commit state changes
         run: |
           git config user.name "github-actions[bot]"
