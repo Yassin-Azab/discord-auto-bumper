@@ -1,6 +1,27 @@
 {
   "current_account": 0,
   "bumps_done_this_account": 0,
-  "next_bump_time": null,
-  "last_bump_time": null
+  "next_bump_time": "2026-08-16T16:05:12.951607",
+  "last_bump_time": "2026-08-16T13:50:12.951607",
+  "bumps_done": 1,
+  "cached_cmd_version": {
+    "id": "947088344167366698",
+    "version": "1537286355519021118",
+    "description": "Bump this server.",
+    "full_data": {
+      "id": "947088344167366698",
+      "type": 1,
+      "application_id": "302050872383242240",
+      "version": "1537286355519021118",
+      "name": "bump",
+      "description": "Bump this server.",
+      "description_default": "Pushes your server to the top of all your server's tags and the front page",
+      "dm_permission": true,
+      "integration_types": [
+        0
+      ],
+      "global_popularity_rank": 1
+    }
+  },
+  "version_last_updated": "2026-08-16T13:50:13.166206"
 }
