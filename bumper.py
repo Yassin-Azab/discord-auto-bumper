@@ -8,10 +8,10 @@ from datetime import datetime, timedelta
 
 # ========== CONFIG ==========
 TOKENS = [
-    os.getenv("TOKEN_1", ""),
-    os.getenv("TOKEN_2", ""),
-    os.getenv("TOKEN_3", ""),
-    os.getenv("TOKEN_4", "")
+    os.getenv("TOKEN_1", "").strip(),
+    os.getenv("TOKEN_2", "").strip(),
+    os.getenv("TOKEN_3", "").strip(),
+    os.getenv("TOKEN_4", "").strip()
 ]
 GUILD_ID = int(os.getenv("GUILD_ID", "0"))
 CHANNEL_ID = int(os.getenv("CHANNEL_ID", "0"))
