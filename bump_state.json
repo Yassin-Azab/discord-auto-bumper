@@ -1,9 +1,9 @@
 {
-  "current_account": 3,
+  "current_account": 0,
   "bumps_done_this_account": 0,
-  "next_bump_time": "2026-10-11T03:11:01.240201",
-  "last_bump_time": "2026-10-11T00:46:01.240201",
-  "bumps_done": 2,
+  "next_bump_time": "2026-10-11T09:15:04.783381",
+  "last_bump_time": "2026-10-11T06:53:04.783381",
+  "bumps_done": 0,
   "cached_cmd_version": {
     "id": "947088344167366698",
     "version": "1537286355519021118",
