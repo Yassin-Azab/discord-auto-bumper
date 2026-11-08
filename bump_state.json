@@ -1,9 +1,9 @@
 {
-  "current_account": 0,
+  "current_account": 1,
   "bumps_done_this_account": 0,
-  "next_bump_time": "2026-11-08T00:08:56.365637",
-  "last_bump_time": "2026-11-07T21:53:56.365637",
-  "bumps_done": 2,
+  "next_bump_time": "2026-11-08T03:39:02.930493",
+  "last_bump_time": "2026-11-08T01:10:02.930493",
+  "bumps_done": 0,
   "cached_cmd_version": {
     "id": "947088344167366698",
     "version": "1537286355519021118",
@@ -23,5 +23,5 @@
       "global_popularity_rank": 1
     }
   },
-  "version_last_updated": "2026-11-07T00:23:47.845754"
+  "version_last_updated": "2026-11-08T01:10:03.047986"
 }
